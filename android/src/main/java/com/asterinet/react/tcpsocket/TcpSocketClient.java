@@ -187,21 +187,17 @@ class TcpSocketClient extends TcpSocket {
         public void run() {
             int socketId = clientSocket.getId();
             Socket socket = clientSocket.getSocket();
-            byte[] buffer = new byte[16384];
             try {
                 BufferedInputStream in = new BufferedInputStream(socket.getInputStream());
+                Scanner sc = new Scanner(in).useDelimiter("\n");
                 while (!socket.isClosed()) {
-                    int bufferCount = in.read(buffer);
-                    waitIfPaused();
-                    if (bufferCount > 0) {
-                        receiverListener.onData(socketId, Arrays.copyOfRange(buffer, 0, bufferCount));
-                    } else if (bufferCount == -1) {
-                        clientSocket.destroy();
-                    }
+                    String message = sc.next();
+                    Charset charset = StandardCharsets.UTF_8;
+                    byte[] byteArrray = message.getBytes(charset);
+                    receiverListener.onData(socketId, byteArrray);
                 }
-            } catch (IOException | InterruptedException ioe) {
-                if (receiverListener != null && !socket.isClosed() && !clientSocket.closed) {
-                    receiverListener.onError(socketId, ioe);
+            } catch (IOException e) {
+                if (receiverListener != null && !socket.isClosed()) {
                 }
             }
         }
