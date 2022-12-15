@@ -199,8 +199,9 @@ class TcpSocketClient extends TcpSocket {
                     byte[] byteArrray = message.getBytes(charset);
                     receiverListener.onData(socketId, byteArrray);
                 }
-            } catch (IOException e) {
+            } catch (Exception e) {
                 if (receiverListener != null && !socket.isClosed()) {
+                    receiverListener.onError(socketId, e);
                 }
             }
         }
